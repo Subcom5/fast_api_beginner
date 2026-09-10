@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.vscode
+
+.venv
+.env
+
+# project
+example/
+app_fastapi_dependens/
+app_start/
+app_vue/
+sql/
+alembic/
+test.py
+
+# Базы данных
+*.db
