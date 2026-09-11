@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from decimal import Decimal
 from typing import Annotated
+from datetime import datetime
 
 
 class CategoryCreate(BaseModel):
@@ -264,3 +265,82 @@ class RefreshTokenRequest(BaseModel):
             description="Refresh-токен"
         )
     ]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ReviewCreate(BaseModel):
+    """
+    Модель для создания и обновления отзыва.
+    Используется в POST и PUT запросах.
+    """
+    comment: Annotated[
+        str | None,
+        Field(
+            max_length=1000,
+            default=None,
+            description="Текст комментария",
+        )
+    ]
+    grade: Annotated[
+        int,
+        Field(
+            ...,
+            ge=1,
+            le=5,
+            description="Оценка товара (от 1 до 5)",
+        )
+    ]
+
+class Review(BaseModel):
+    """
+    Модель для ответа с данными отзыва.
+    Используется в GET запросах.
+    """
+    id: Annotated[
+        int,
+        Field(
+            description="Уникальный идентификатор отзыва",
+        )
+    ]
+    user_id: Annotated[
+        int,
+        Field(
+            description="Уникальный идентификатор покупателя",
+        )
+    ]
+    product_id: Annotated[
+        int,
+        Field(
+            description="Уникальный идентификатор продукта",
+        )
+    ]
+    comment: Annotated[
+        str | None,
+        Field(
+            max_length=1000,
+            description="Текст отзыва",
+        )
+    ]
+    comment_date: Annotated[
+        datetime,
+        Field(
+            description="Дата отзыва",
+        )
+    ]
+    grade: Annotated[
+        int,
+        Field(
+            ge=1,
+            le=5,
+            description="Оценка товара (от 1 до 5)",
+        )
+    ]
+    is_active: Annotated[
+        bool,
+        Field(
+            description="Активность отзыва",
+        )
+    ]
+
+    model_config = ConfigDict(from_attributes=True)

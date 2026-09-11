@@ -163,3 +163,41 @@ async def get_current_admin(current_user: UserModel = Depends(get_current_user))
             detail="Only admin can perform this action"
         )
     return current_user
+
+async def get_current_buyer(current_user: UserModel = Depends(get_current_user)):
+    """
+    Проверяет, что пользователь имеет роль 'admin'.
+    """
+
+    if current_user.role != "buyer":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only buyer can perform this action"
+        )
+    return current_user
+
+async def get_current_buyer_or_admin(
+    current_user: UserModel = Depends(get_current_user)
+):
+    """
+    Проверяет, что пользователь имеет роль 'admin' или 'buyer'.
+    """
+
+    if current_user.role not in ("admin", "buyer"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only buyer or admin can perform this action"
+        )
+    return current_user
+
+# Можно использовать фабрику вместо четырех функций, но я не стал,
+# чтобы оставить текущий подход и не править cуществующий код.
+def require_roles(*allowed_roles: str):
+    async def role_checker(current_user: UserModel = Depends(get_current_user)):
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Only {', '.join(allowed_roles)} can perform this action"
+            )
+        return current_user
+    return role_checker
