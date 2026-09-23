@@ -6,7 +6,7 @@ from app.database import Base
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.products import Product
+    from app.models import Product
 
 
 class Category(Base):

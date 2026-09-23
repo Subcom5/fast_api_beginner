@@ -5,8 +5,9 @@ from app.database import Base
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.products import Product
-    from app.models.reviews import Review
+    from app.models import Product
+    from app.models import Review
+    from app.models import CartItem
 
 
 class User(Base):
@@ -28,4 +29,9 @@ class User(Base):
     reviews: Mapped[list["Review"]] = relationship(
         "Review",
         back_populates="user",
+    )
+    cart_items: Mapped[list["CartItem"]] = relationship(
+        "CartItem",
+        back_populates="user",
+        cascade="all, delete-orphan"
     )

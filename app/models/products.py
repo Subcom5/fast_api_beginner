@@ -14,9 +14,10 @@ from app.database import Base
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.categories import Category
-    from app.models.users import User
-    from app.models.reviews import Review
+    from app.models import Category
+    from app.models import User
+    from app.models import Review
+    from app.models import CartItem
 
 
 class Product(Base):
@@ -41,14 +42,14 @@ class Product(Base):
         nullable=False,
     )
     tsv: Mapped[TSVECTOR] = mapped_column(
-        TSVECTOR,
-        Computed(
-        """
-        setweight(to_tsvector('english', coalesce(name, '')), 'A')
-        ||
-        setweight(to_tsvector('english', coalesce(description, '')), 'B')
-        """,
-        persisted=True,
+            TSVECTOR,
+            Computed(
+            """
+            setweight(to_tsvector('english', coalesce(name, '')), 'A')
+            ||
+            setweight(to_tsvector('english', coalesce(description, '')), 'B')
+            """,
+            persisted=True,
         )
     )
 
@@ -63,6 +64,11 @@ class Product(Base):
     reviews: Mapped[list["Review"]] = relationship(
         "Review",
         back_populates="product",
+    )
+    cart_items: Mapped[list["CartItem"]] = relationship(
+        "CartItem",
+        back_populates="product",
+        cascade="all, delete-orphan"
     )
 
     __table_args__ = (

@@ -9,8 +9,8 @@ from datetime import datetime
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.models.users import User
-    from app.models.products import Product
+    from app.models import User
+    from app.models import Product
 
 
 class Review(Base):
