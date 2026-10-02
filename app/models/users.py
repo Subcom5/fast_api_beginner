@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from app.models import Product
     from app.models import Review
     from app.models import CartItem
+    from app.models import Order
 
 
 class User(Base):
@@ -16,11 +17,33 @@ class User(Base):
     """
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default= True)
-    role: Mapped[str] = mapped_column(String, default="buyer")
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        comment="Уникальный идентификатор пользователя"
+    )
+    email: Mapped[str] = mapped_column(
+        String,
+        unique=True,
+        index=True,
+        nullable=False,
+        comment="Адрес электронной почты"
+    )
+    hashed_password: Mapped[str] = mapped_column(
+        String,
+        nullable=False,
+        comment="Захэшированный пароль"
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default= True,
+        comment="Метка активности пользователя"
+    )
+    role: Mapped[str] = mapped_column(
+        String,
+        default="buyer",
+        comment="Роль пользователя"
+    )
 
     products: Mapped[list["Product"]] = relationship(
         "Product",
@@ -32,6 +55,11 @@ class User(Base):
     )
     cart_items: Mapped[list["CartItem"]] = relationship(
         "CartItem",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+    orders: Mapped[list["Order"]] = relationship(
+        "Order",
         back_populates="user",
         cascade="all, delete-orphan"
     )

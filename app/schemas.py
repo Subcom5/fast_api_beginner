@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from fastapi import Form
 from decimal import Decimal
 from typing import Annotated
 from datetime import datetime
@@ -95,14 +96,6 @@ class ProductCreate(BaseModel):
             decimal_places=2,
         )
     ]
-    image_url: Annotated[
-        str | None,
-        Field(
-            default=None,
-            max_length=200,
-            description="URL изображения товара",
-        )
-    ]
     stock: Annotated[
         int,
         Field(
@@ -119,6 +112,22 @@ class ProductCreate(BaseModel):
         )
     ]
 
+    @classmethod
+    def as_form(
+        cls,
+        name: Annotated[str, Form(...)],
+        price: Annotated[Decimal, Form(...)],
+        stock: Annotated[int, Form(...)],
+        category_id: Annotated[int, Form()],
+        description: Annotated[str | None, Form()] = None,
+    ) -> "ProductCreate":
+        return cls(
+            name=name,
+            description=description,
+            price=price,
+            stock=stock,
+            category_id=category_id,
+        )
 
 class Product(BaseModel):
     """
@@ -153,6 +162,7 @@ class Product(BaseModel):
             description="Цена товара в рублях",
             gt=0,
             decimal_places=2,
+            examples=[100.50],
         )
     ]
     image_url: Annotated[
@@ -185,6 +195,7 @@ class Product(BaseModel):
     ]
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class ProductList(BaseModel):
     """
@@ -219,6 +230,7 @@ class ProductList(BaseModel):
     ]
 
     model_config = ConfigDict(from_attributes=True)
+
 
 class UserCreate(BaseModel):
     """
@@ -325,6 +337,7 @@ class ReviewCreate(BaseModel):
         )
     ]
 
+
 class Review(BaseModel):
     """
     Модель для ответа с данными отзыва.
@@ -373,6 +386,261 @@ class Review(BaseModel):
         bool,
         Field(
             description="Активность отзыва",
+        )
+    ]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CartItemBase(BaseModel):
+    """
+    Базовая модель, которая содержит минимальный набор полей, необходимых
+    для идентификации товара и его количества в корзине.
+    """
+    product_id: Annotated[
+        int,
+        Field(
+            description="ID товара"
+        )
+    ]
+    quantity: Annotated[
+        int,
+        Field(
+            ge=1,
+            description="Количество товара"
+        )
+    ]
+
+class CartItemCreate(CartItemBase):
+    """
+    Модель для добавления нового товара в корзину.
+    """
+    pass
+
+
+class CartItemUpdate(BaseModel):
+    """
+    Модель для обновления количества товаров в корзине.
+    """
+    quantity: Annotated[
+        int,
+        Field(
+            ...,
+            ge=1,
+            description="Новое количество товара"
+        )
+    ]
+
+
+class CartItem(BaseModel):
+    """
+    Товар в корзине с данными продукта.
+    """
+    id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID позиции корзины"
+        )
+    ]
+    quantity: Annotated[
+        int,
+        Field(
+            ...,
+            ge=1,
+            description="Количество товара"
+        )
+    ]
+    product: Annotated[
+        Product,
+        Field(
+            ...,
+            description="Информация о товаре"
+        )
+    ]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Cart(BaseModel):
+    """
+    Полная информация о корзине пользователя.
+    """
+    user_id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID пользователя"
+        )
+    ]
+    items: Annotated[
+        list[CartItem],
+        Field(
+            default_factory=list,
+            description="Содержимое корзины"
+        )
+    ]
+    total_quantity: Annotated[
+          int,
+          Field(
+              ...,
+              ge=0,
+              description="Общее количество товаров"
+          )
+    ]
+    total_price: Annotated[
+        Decimal,
+        Field(
+            ...,
+            ge=0,
+            description="Общая стоимость товаров"
+        )
+    ]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrderItem(BaseModel):
+    """
+    Описывает одну строку заказа. Используется в ответах API
+    при возврате деталей заказа.
+    """
+    id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID позиции заказа"
+        )
+    ]
+    product_id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID товара"
+        )
+    ]
+    quantity: Annotated[
+        int,
+        Field(
+            ...,
+            ge=1,
+            description="Количество товара"
+        )
+    ]
+    unit_price: Annotated[
+        Decimal,
+        Field(
+            ...,
+            ge=0,
+            description="Цена за единицу на момент покупки"
+        )
+    ]
+    total_price: Annotated[
+        Decimal,
+        Field(
+            ...,
+            ge=0,
+            description="Сумма по позиции"
+        )
+    ]
+    product: Annotated[
+        Product | None,
+        Field(
+            None,
+            description="Полная информация о товаре"
+        )
+    ]
+    model_config = ConfigDict(from_attributes=True)
+
+
+class Order(BaseModel):
+    """
+    Описание полного заказа.
+    """
+    id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID заказа"
+        )
+    ]
+    user_id: Annotated[
+        int,
+        Field(
+            ...,
+            description="ID пользователя"
+        )
+    ]
+    status: Annotated[
+        str,
+        Field(
+            ...,
+            description="Текущий статус заказа"
+        )
+    ]
+    total_amount: Annotated[
+        Decimal,
+        Field(
+            ...,
+            ge=0,
+            description="Общая стоимомсть"
+        )
+    ]
+    created_at: Annotated[
+        datetime,
+        Field(
+            ...,
+            description="Время создания заказа"
+        )
+    ]
+    updated_at: Annotated[
+        datetime,
+        Field(
+            ...,
+            description="Время обновления заказа"
+        )
+    ]
+    items: Annotated[
+        list[OrderItem],
+        Field(
+            default_factory=list,
+            description="Список позиций"
+        )
+    ]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrderList(BaseModel):
+    """
+    Выводит все заказы текущего пользователя.
+    """
+    items: Annotated[
+        list[Order],
+        Field(
+            ...,
+            description="Заказы на текущей странице"
+        )
+    ]
+    total: Annotated[
+        int,
+        Field(
+            ge=0,
+            description="Общее количество заказов"
+        )
+    ]
+    page: Annotated[
+        int,
+        Field(
+            ge=1,
+            description="Текущая страница"
+        )
+    ]
+    page_size: Annotated[
+        int,
+        Field(
+            ge=1,
+            description="Размер страницы"
         )
     ]
 

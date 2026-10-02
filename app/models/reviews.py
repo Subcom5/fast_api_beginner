@@ -19,17 +19,41 @@ class Review(Base):
     """
     __tablename__ = "reviews"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
-    comment: Mapped[str | None] = mapped_column(Text, nullable=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        comment="Уникальный идентификатор отзыва"
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        comment="Уникальный идентификатор пользователя из таблицы users"
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id"),
+        nullable=False,
+        comment="Уникальный идентификатор продукта из таблицы products")
+    comment: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Текст отзыва"
+    )
     comment_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
-        nullable=False
+        nullable=False,
+        comment="Дата и время отзыва"
     )
-    grade: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    grade: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Оценка товара покупателем"
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        comment="Метка активности отзыва"
+    )
 
     __table_args__ = (
         CheckConstraint("grade BETWEEN 1 AND 5", name="ck_review_grade"),

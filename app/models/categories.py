@@ -15,10 +15,26 @@ class Category(Base):
     """
     __tablename__ = "categories"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        comment="Уникальный идентификатор категории товаров"
+    )
+    name: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+        comment="Название категории товара"
+    )
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("categories.id"),
+        nullable=True,
+        comment="Уникальный идентификатор родительской категории товара"
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        comment="Метка активности категории"
+    )
 
     products: Mapped[list["Product"]] = relationship(
         "Product",

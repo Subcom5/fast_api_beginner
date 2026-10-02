@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from app.models import User
     from app.models import Review
     from app.models import CartItem
+    from app.models import OrderItem
 
 
 class Product(Base):
@@ -26,20 +27,57 @@ class Product(Base):
     """
     __tablename__ = "products"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    price: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
-    image_url: Mapped[str | None] = mapped_column(String(200), nullable=True)
-    stock: Mapped[int] = mapped_column(Integer, nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
-    seller_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        comment="Уникальный идентификатор продукта"
+    )
+    name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        comment="Название товара"
+    )
+    description: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+        comment="Описание товара"
+    )
+    price: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        nullable=False,
+        comment="Стоимость товара"
+    )
+    image_url: Mapped[str | None] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Фотография товара"
+    )
+    stock: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Количество товара"
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        comment="Метка активности товара"
+    )
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id"),
+        nullable=False,
+        comment="Уникальный идентификатор категории товара из таблицы categories"
+    )
+    seller_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id"),
+        nullable=False,
+        comment="Уникальный идентификатор продавца товара из таблицы users"
+    )
     rating: Mapped[Decimal] = mapped_column(
         Numeric(3, 1),
         default=Decimal(0.0),
         server_default="0",
         nullable=False,
+        comment="Рейтинг товара"
     )
     tsv: Mapped[TSVECTOR] = mapped_column(
             TSVECTOR,
@@ -69,6 +107,10 @@ class Product(Base):
         "CartItem",
         back_populates="product",
         cascade="all, delete-orphan"
+    )
+    order_items: Mapped[list["OrderItem"]] = relationship(
+        "OrderItem",
+        back_populates="product"
     )
 
     __table_args__ = (

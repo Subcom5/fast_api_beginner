@@ -18,6 +18,8 @@ class CartItem(Base):
     """
     __tablename__ = "cart_item"
 
+    # Гарантирует, что один и тот же товар не может
+    # быть добавлен в корзину пользователя дважды.
     __table_args__ = (
         UniqueConstraint("user_id", "product_id",
             name="uq_cart_items_user_product"),
